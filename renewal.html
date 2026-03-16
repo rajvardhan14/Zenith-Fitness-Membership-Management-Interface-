@@ -1,0 +1,97 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Zenith Fitness | Membership Renewal</title>
+  <link rel="stylesheet" href="renewal.css">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nav-brand">🏋️ Zenith Fitness</div>
+  <div class="nav-links">
+    <a href="index.html">New Admission</a>
+    <a href="renewal.html" class="active">Renewal</a>
+    <a href="enquire.html">Enquire</a>
+  </div>
+</nav>
+
+<div class="container">
+  <h1>🔄 Membership Renewal</h1>
+
+  <!-- SEARCH -->
+  <div class="section">
+    <h2>Find Member</h2>
+    <div class="row">
+      <input type="text" id="searchMobile" placeholder="Enter Mobile Number or Admission ID">
+      <button type="button" onclick="fetchMember()">Search</button>
+    </div>
+  </div>
+
+  <!-- MEMBER DETAILS -->
+  <div class="section">
+    <h2>Member Details</h2>
+    <div class="row">
+      <input type="text" id="memberName" placeholder="Name" readonly disabled>
+      <input type="text" id="memberId" placeholder="Admission ID" readonly disabled>
+    </div>
+    <div class="row">
+      <input type="text" id="currentPlan" placeholder="Current Plan" readonly disabled>
+      <input type="text" id="currentEndDate" placeholder="Current Plan" readonly disabled>
+    </div>
+  </div>
+
+  <!-- RENEWAL FORM -->
+  <form id="renewalForm">
+
+    <!-- HIDDEN DATA -->
+    <input type="hidden" id="hiddenAdmissionId">
+    <input type="hidden" id="hiddenMobile">
+
+    <div class="section">
+      <h2>Renewal Details</h2>
+
+      <div class="row">
+        <select id="newPlan" required disabled>
+          <option value="">Select New Plan</option>
+          <option value="30">1 Month</option>
+          <option value="90">3 Months</option>
+          <option value="180">6 Months</option>
+          <option value="365">12 Months</option>
+        </select>
+
+        <input type="date" id="renewStartDate" required disabled>
+      </div>
+
+      <div class="row">
+        <input type="date" id="renewEndDate" readonly disabled>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Payment</h2>
+
+      <div class="row">
+        <input type="number" id="totalAmount" required placeholder="Total Amount" disabled>
+        <input type="number" id="discount" required placeholder="Discount" disabled>
+      </div>
+
+      <div class="row">
+        <input type="number" id="finalAmount" placeholder="Final Amount" readonly disabled>
+        <select id="paymentMode" required disabled>
+          <option value="">Payment Mode</option>
+          <option>Cash</option>
+          <option>UPI</option>
+          <option>Card</option>
+        </select>
+      </div>
+    </div>
+
+    <button type="submit" id="saveRenewalBtn" disabled>Save Renewal</button>
+  </form>
+</div>
+
+<script src="renewal.js"></script>
+</body>
+</html>
