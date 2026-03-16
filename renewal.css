@@ -1,7 +1,14 @@
+html {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
 body {
   background: #0a1a2f;
   font-family: "Segoe UI", sans-serif;
   color: #fff;
+  overflow-x: hidden;
+  touch-action: pan-y;
 }
 
 .container {
