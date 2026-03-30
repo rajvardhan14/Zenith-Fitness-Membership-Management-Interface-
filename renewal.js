@@ -1,6 +1,6 @@
 ﻿const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwVjje6NL54Uj8HghM-seBsHaHkuAdLRO9JZZ1jhYWo10KnnVNHxdW4TVn42xvIPJ5GkA/exec";
 
-// SEARCH INPUT
+// SEARCH INPUT 
 const searchMobile = document.getElementById("searchMobile");
 
 // MEMBER DETAILS
