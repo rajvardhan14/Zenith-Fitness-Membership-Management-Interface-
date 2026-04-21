@@ -88,6 +88,7 @@ function fetchMember() {
   fetch(`${SCRIPT_URL}?action=fetchMember&${queryParam}`)
     .then(res => res.json())
     .then(data => {
+
       if (!data.success) {
         alert("❌ Member not found");
         return;
@@ -104,18 +105,27 @@ function fetchMember() {
       enableRenewalForm();
 
       if (data.endDate) {
+
         const isoEndDate = ddmmyyyyToISO(data.endDate);
         const d = new Date(isoEndDate);
         d.setDate(d.getDate() + 1);
-        renewStartDate.value = d.toISOString().split("T")[0];
+
+        renewStartDate.value =
+          d.toISOString().split("T")[0];
+
       }
+
     })
     .catch(err => {
+
       console.error(err);
-      alert("❌ Error fetching member");
+      alert("Error fetching member");
+
     })
     .finally(() => {
+
       setSearchLoading(false);
+
     });
 }
 
