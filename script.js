@@ -129,8 +129,8 @@ if (!endDateInput.value) return alert("Please select an end date");
       }
 
       if (data && data.success) {
-        await triggerMembershipSync();
         alert("✅ Admission Saved Successfully");
+         triggerMembershipSync().catch(() => {});
         admissionForm.reset();
 endDateInput.value = "";
 finalAmountInput.value = "";
@@ -138,8 +138,8 @@ return;
       }
 
       if (/success/i.test(raw)) {
-        await triggerMembershipSync();
         alert("✅ Admission Saved Successfully");
+         triggerMembershipSync().catch(() => {});
         admissionForm.reset();
 endDateInput.value = "";
 finalAmountInput.value = "";
