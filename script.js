@@ -53,8 +53,11 @@ function calculateFinalAmount() {
 
 function setAdmissionSubmitting(isSubmitting) {
   if (!submitAdmissionBtn) return;
+
   submitAdmissionBtn.disabled = isSubmitting;
   submitAdmissionBtn.textContent = isSubmitting ? "Submitting..." : ADMISSION_BTN_DEFAULT;
+  submitAdmissionBtn.style.opacity = isSubmitting ? "0.7" : "1";
+  submitAdmissionBtn.style.cursor = isSubmitting ? "not-allowed" : "pointer";
 }
 
 async function triggerMembershipSync() {
