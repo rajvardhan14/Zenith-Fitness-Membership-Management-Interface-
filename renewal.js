@@ -107,23 +107,32 @@ function fetchMember() {
    ENABLE FORM
 ========================= */
 function enableRenewalForm() {
-  [
-    newPlan,
-    renewStartDate,
-    totalAmount,
-    discount,
-    paymentMode,
-    saveBtn
-  ].forEach(el => {
-    el.disabled = false;
-  });
-}
+ [
+  newPlan,
+  renewStartDate,
+  renewEndDate,
+  totalAmount,
+  discount,
+  paymentMode,
+  saveBtn
+].forEach(el => {
+  el.disabled = false;
+});
 
 /* =========================
    CALCULATE END DATE
 ========================= */
 function calculateRenewEndDate() {
-  if (!newPlan.value || !renewStartDate.value) return;
+  if (!newPlan.value || !renewStartDate.value) {
+    renewEndDate.value = "";
+    return;
+  }
+
+  // For customize package, let user select end date manually
+  if (newPlan.value === "custom") {
+    renewEndDate.value = "";
+    return;
+  }
 
   const d = new Date(renewStartDate.value);
   d.setDate(d.getDate() + parseInt(newPlan.value));
@@ -143,6 +152,10 @@ function calculateFinalAmount() {
 ========================= */
 renewalForm.addEventListener("submit", function (e) {
   e.preventDefault();
+  if (!hiddenAdmissionId.value) return alert("Please search and select a member first");
+if (!newPlan.value) return alert("Please select a renewal plan");
+if (!renewStartDate.value) return alert("Please select a renewal start date");
+if (!renewEndDate.value) return alert("Please select a renewal end date");
 
   const formData = new FormData();
   formData.append("action", "saveRenewal");
@@ -150,6 +163,7 @@ renewalForm.addEventListener("submit", function (e) {
   formData.append("mobile", hiddenMobile.value);
   formData.append("name", memberName.value);
   formData.append("plan", newPlan.value);
+  formData.append("isCustomPackage", newPlan.value === "custom" ? "YES" : "NO");
   formData.append("startDate", renewStartDate.value);
   formData.append("endDate", renewEndDate.value);
   formData.append("amount", totalAmount.value);
@@ -185,7 +199,15 @@ renewalForm.addEventListener("submit", function (e) {
         await triggerMembershipSync();
         alert("✅ Renewal Saved Successfully");
         renewalForm.reset();
-        return;
+memberName.value = "";
+memberId.value = "";
+currentPlan.value = "";
+currentEndDate.value = "";
+hiddenAdmissionId.value = "";
+hiddenMobile.value = "";
+renewEndDate.value = "";
+finalAmount.value = "";
+return;
       }
 
       alert("❌ Error saving renewal: " + raw);
