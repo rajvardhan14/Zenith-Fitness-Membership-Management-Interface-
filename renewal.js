@@ -186,8 +186,8 @@ renewalForm.addEventListener("submit", function (e) {
       }
 
       if (data && data.success) {
-        await triggerMembershipSync();
         alert("✅ Renewal Saved Successfully");
+        triggerMembershipSync().catch(() => {});
         renewalForm.reset();
         memberName.value = "";
         memberId.value = "";
@@ -201,8 +201,8 @@ renewalForm.addEventListener("submit", function (e) {
       }
 
       if (/success/i.test(raw)) {
-        await triggerMembershipSync();
         alert("✅ Renewal Saved Successfully");
+        triggerMembershipSync().catch(() => {});
         renewalForm.reset();
         memberName.value = "";
         memberId.value = "";
