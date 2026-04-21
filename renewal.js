@@ -1,6 +1,6 @@
-﻿const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwVjje6NL54Uj8HghM-seBsHaHkuAdLRO9JZZ1jhYWo10KnnVNHxdW4TVn42xvIPJ5GkA/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwVjje6NL54Uj8HghM-seBsHaHkuAdLRO9JZZ1jhYWo10KnnVNHxdW4TVn42xvIPJ5GkA/exec";
 
-// SEARCH INPUT  
+// SEARCH INPUT
 const searchMobile = document.getElementById("searchMobile");
 const searchMemberBtn = document.getElementById("searchMemberBtn");
 
@@ -30,7 +30,6 @@ const RENEWAL_BTN_DEFAULT = saveBtn ? saveBtn.textContent : "Save Renewal";
 
 function setRenewalSubmitting(isSubmitting) {
   if (!saveBtn) return;
-
   saveBtn.disabled = isSubmitting;
   saveBtn.textContent = isSubmitting ? "Submitting..." : RENEWAL_BTN_DEFAULT;
   saveBtn.style.opacity = isSubmitting ? "0.7" : "1";
@@ -39,12 +38,10 @@ function setRenewalSubmitting(isSubmitting) {
 
 function setSearchLoading(isLoading) {
   if (!searchMemberBtn) return;
-
   searchMemberBtn.disabled = isLoading;
   searchMemberBtn.textContent = isLoading ? "Searching..." : "Search";
   searchMemberBtn.style.opacity = isLoading ? "0.7" : "1";
   searchMemberBtn.style.cursor = isLoading ? "not-allowed" : "pointer";
-
   searchMobile.disabled = isLoading;
 }
 
@@ -54,9 +51,7 @@ async function triggerMembershipSync() {
     try {
       const res = await fetch(url, { method: "POST" });
       if (res.ok) return true;
-    } catch (_) {
-      // Try next candidate URL.
-    }
+    } catch (_) {}
   }
   return false;
 }
@@ -67,9 +62,6 @@ function ddmmyyyyToISO(dateStr) {
   return `${yyyy}-${mm}-${dd}`;
 }
 
-/* =========================
-   FETCH MEMBER BY MOBILE
-========================= */
 function fetchMember() {
   const input = searchMobile.value.trim();
   if (!input) return alert("Enter Mobile Number or Admission ID");
@@ -88,7 +80,6 @@ function fetchMember() {
   fetch(`${SCRIPT_URL}?action=fetchMember&${queryParam}`)
     .then(res => res.json())
     .then(data => {
-
       if (!data.success) {
         alert("❌ Member not found");
         return;
@@ -105,56 +96,41 @@ function fetchMember() {
       enableRenewalForm();
 
       if (data.endDate) {
-
         const isoEndDate = ddmmyyyyToISO(data.endDate);
         const d = new Date(isoEndDate);
         d.setDate(d.getDate() + 1);
-
-        renewStartDate.value =
-          d.toISOString().split("T")[0];
-
+        renewStartDate.value = d.toISOString().split("T")[0];
       }
-
     })
     .catch(err => {
-
       console.error(err);
       alert("Error fetching member");
-
     })
     .finally(() => {
-
       setSearchLoading(false);
-
     });
 }
 
-/* =========================
-   ENABLE FORM
-========================= */
 function enableRenewalForm() {
- [
-  newPlan,
-  renewStartDate,
-  renewEndDate,
-  totalAmount,
-  discount,
-  paymentMode,
-  saveBtn
-].forEach(el => {
-  el.disabled = false;
-});
+  [
+    newPlan,
+    renewStartDate,
+    renewEndDate,
+    totalAmount,
+    discount,
+    paymentMode,
+    saveBtn
+  ].forEach(el => {
+    el.disabled = false;
+  });
 }
-/* =========================
-   CALCULATE END DATE
-========================= */
+
 function calculateRenewEndDate() {
   if (!newPlan.value || !renewStartDate.value) {
     renewEndDate.value = "";
     return;
   }
 
-  // For customize package, let user select end date manually
   if (newPlan.value === "custom") {
     renewEndDate.value = "";
     return;
@@ -165,23 +141,18 @@ function calculateRenewEndDate() {
   renewEndDate.value = d.toISOString().split("T")[0];
 }
 
-/* =========================
-   FINAL AMOUNT
-========================= */
 function calculateFinalAmount() {
   finalAmount.value =
     (Number(totalAmount.value) || 0) - (Number(discount.value) || 0);
 }
 
-/* =========================
-   SAVE RENEWAL
-========================= */
 renewalForm.addEventListener("submit", function (e) {
   e.preventDefault();
+
   if (!hiddenAdmissionId.value) return alert("Please search and select a member first");
-if (!newPlan.value) return alert("Please select a renewal plan");
-if (!renewStartDate.value) return alert("Please select a renewal start date");
-if (!renewEndDate.value) return alert("Please select a renewal end date");
+  if (!newPlan.value) return alert("Please select a renewal plan");
+  if (!renewStartDate.value) return alert("Please select a renewal start date");
+  if (!renewEndDate.value) return alert("Please select a renewal end date");
 
   const formData = new FormData();
   formData.append("action", "saveRenewal");
@@ -214,34 +185,34 @@ if (!renewEndDate.value) return alert("Please select a renewal end date");
         data = null;
       }
 
-     if (data && data.success) {
-  await triggerMembershipSync();
-  alert("✅ Renewal Saved Successfully");
-  renewalForm.reset();
-  memberName.value = "";
-  memberId.value = "";
-  currentPlan.value = "";
-  currentEndDate.value = "";
-  hiddenAdmissionId.value = "";
-  hiddenMobile.value = "";
-  renewEndDate.value = "";
-  finalAmount.value = "";
-  return;
-}
+      if (data && data.success) {
+        await triggerMembershipSync();
+        alert("✅ Renewal Saved Successfully");
+        renewalForm.reset();
+        memberName.value = "";
+        memberId.value = "";
+        currentPlan.value = "";
+        currentEndDate.value = "";
+        hiddenAdmissionId.value = "";
+        hiddenMobile.value = "";
+        renewEndDate.value = "";
+        finalAmount.value = "";
+        return;
+      }
 
       if (/success/i.test(raw)) {
         await triggerMembershipSync();
         alert("✅ Renewal Saved Successfully");
         renewalForm.reset();
-memberName.value = "";
-memberId.value = "";
-currentPlan.value = "";
-currentEndDate.value = "";
-hiddenAdmissionId.value = "";
-hiddenMobile.value = "";
-renewEndDate.value = "";
-finalAmount.value = "";
-return;
+        memberName.value = "";
+        memberId.value = "";
+        currentPlan.value = "";
+        currentEndDate.value = "";
+        hiddenAdmissionId.value = "";
+        hiddenMobile.value = "";
+        renewEndDate.value = "";
+        finalAmount.value = "";
+        return;
       }
 
       alert("❌ Error saving renewal: " + raw);
@@ -255,9 +226,6 @@ return;
     });
 });
 
-/* =========================
-   LISTENERS
-========================= */
 newPlan.addEventListener("change", calculateRenewEndDate);
 renewStartDate.addEventListener("change", calculateRenewEndDate);
 totalAmount.addEventListener("input", calculateFinalAmount);
