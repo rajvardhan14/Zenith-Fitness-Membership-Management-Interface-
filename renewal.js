@@ -2,6 +2,7 @@
 
 // SEARCH INPUT  
 const searchMobile = document.getElementById("searchMobile");
+const searchMemberBtn = document.getElementById("searchMemberBtn");
 
 // MEMBER DETAILS
 const memberName = document.getElementById("memberName");
@@ -29,8 +30,22 @@ const RENEWAL_BTN_DEFAULT = saveBtn ? saveBtn.textContent : "Save Renewal";
 
 function setRenewalSubmitting(isSubmitting) {
   if (!saveBtn) return;
+
   saveBtn.disabled = isSubmitting;
   saveBtn.textContent = isSubmitting ? "Submitting..." : RENEWAL_BTN_DEFAULT;
+  saveBtn.style.opacity = isSubmitting ? "0.7" : "1";
+  saveBtn.style.cursor = isSubmitting ? "not-allowed" : "pointer";
+}
+
+function setSearchLoading(isLoading) {
+  if (!searchMemberBtn) return;
+
+  searchMemberBtn.disabled = isLoading;
+  searchMemberBtn.textContent = isLoading ? "Searching..." : "Search";
+  searchMemberBtn.style.opacity = isLoading ? "0.7" : "1";
+  searchMemberBtn.style.cursor = isLoading ? "not-allowed" : "pointer";
+
+  searchMobile.disabled = isLoading;
 }
 
 async function triggerMembershipSync() {
@@ -59,8 +74,6 @@ function fetchMember() {
   const input = searchMobile.value.trim();
   if (!input) return alert("Enter Mobile Number or Admission ID");
 
-  // Detect Admission ID when it matches <PREFIX>-<number>.
-  // Numeric inputs should be treated as mobile numbers.
   let queryParam = "";
   const isAdmissionId = /^(ZF|HH|DC)-\d+$/i.test(input);
 
@@ -70,6 +83,8 @@ function fetchMember() {
     queryParam = `mobile=${encodeURIComponent(input)}`;
   }
 
+  setSearchLoading(true);
+
   fetch(`${SCRIPT_URL}?action=fetchMember&${queryParam}`)
     .then(res => res.json())
     .then(data => {
@@ -78,7 +93,6 @@ function fetchMember() {
         return;
       }
 
-      // Populate member data
       memberName.value = data.name;
       memberId.value = data.admissionId;
       currentPlan.value = data.plan;
@@ -89,7 +103,6 @@ function fetchMember() {
 
       enableRenewalForm();
 
-      // Default start date = next day after current end date
       if (data.endDate) {
         const isoEndDate = ddmmyyyyToISO(data.endDate);
         const d = new Date(isoEndDate);
@@ -100,6 +113,9 @@ function fetchMember() {
     .catch(err => {
       console.error(err);
       alert("❌ Error fetching member");
+    })
+    .finally(() => {
+      setSearchLoading(false);
     });
 }
 
