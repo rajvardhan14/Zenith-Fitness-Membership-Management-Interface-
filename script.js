@@ -27,7 +27,16 @@ const ADMISSION_BTN_DEFAULT = submitAdmissionBtn ? submitAdmissionBtn.textConten
    AUTO CALCULATE END DATE
 ========================= */
 function calculateEndDate() {
-  if (!startDateInput.value || !planInput.value) return;
+  if (!startDateInput.value || !planInput.value) {
+    endDateInput.value = "";
+    return;
+  }
+
+  // For customize package, do not auto-calculate
+  if (planInput.value === "custom") {
+    endDateInput.value = "";
+    return;
+  }
 
   const d = new Date(startDateInput.value);
   d.setDate(d.getDate() + parseInt(planInput.value));
@@ -69,8 +78,9 @@ admissionForm.addEventListener("submit", function (e) {
 
   // Basic validation
   if (!planInput.value) return alert("Please select a plan");
-  if (!categoryInput.value) return alert("Please select a membership type");
-  if (!startDateInput.value) return alert("Please select a start date");
+if (!categoryInput.value) return alert("Please select a membership type");
+if (!startDateInput.value) return alert("Please select a start date");
+if (!endDateInput.value) return alert("Please select an end date");
 
   const formData = new FormData();
   formData.append("name", nameInput.value);
@@ -78,6 +88,7 @@ admissionForm.addEventListener("submit", function (e) {
   formData.append("gender", genderInput.value);
   formData.append("age", ageInput.value);
   formData.append("plan", planInput.value);
+   formData.append("isCustomPackage", planInput.value === "custom" ? "YES" : "NO");
   formData.append("category", categoryInput.value);
   formData.append("startDate", startDateInput.value);
   formData.append("endDate", endDateInput.value);
@@ -118,14 +129,18 @@ admissionForm.addEventListener("submit", function (e) {
         await triggerMembershipSync();
         alert("✅ Admission Saved Successfully");
         admissionForm.reset();
-        return;
+endDateInput.value = "";
+finalAmountInput.value = "";
+return;
       }
 
       if (/success/i.test(raw)) {
         await triggerMembershipSync();
         alert("✅ Admission Saved Successfully");
         admissionForm.reset();
-        return;
+endDateInput.value = "";
+finalAmountInput.value = "";
+return;
       }
 
       alert("❌ Server Error: " + raw);
