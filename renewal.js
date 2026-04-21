@@ -144,7 +144,7 @@ function enableRenewalForm() {
 ].forEach(el => {
   el.disabled = false;
 });
-
+}
 /* =========================
    CALCULATE END DATE
 ========================= */
@@ -214,12 +214,20 @@ if (!renewEndDate.value) return alert("Please select a renewal end date");
         data = null;
       }
 
-      if (data && data.success) {
-        await triggerMembershipSync();
-        alert("✅ Renewal Saved Successfully");
-        renewalForm.reset();
-        return;
-      }
+     if (data && data.success) {
+  await triggerMembershipSync();
+  alert("✅ Renewal Saved Successfully");
+  renewalForm.reset();
+  memberName.value = "";
+  memberId.value = "";
+  currentPlan.value = "";
+  currentEndDate.value = "";
+  hiddenAdmissionId.value = "";
+  hiddenMobile.value = "";
+  renewEndDate.value = "";
+  finalAmount.value = "";
+  return;
+}
 
       if (/success/i.test(raw)) {
         await triggerMembershipSync();
