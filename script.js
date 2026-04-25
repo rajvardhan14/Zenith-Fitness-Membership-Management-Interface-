@@ -28,15 +28,19 @@ const ADMISSION_BTN_DEFAULT = submitAdmissionBtn ? submitAdmissionBtn.textConten
 ========================= */
 function calculateEndDate() {
   if (!startDateInput.value || !planInput.value) {
-    endDateInput.value = "";
+    if (planInput.value !== "custom") {
+      endDateInput.value = "";
+    }
     return;
   }
 
-  // For customize package, do not auto-calculate
   if (planInput.value === "custom") {
-    endDateInput.value = "";
+    endDateInput.readOnly = false;
+    endDateInput.required = true;
     return;
   }
+
+  endDateInput.readOnly = true;
 
   const d = new Date(startDateInput.value);
   d.setDate(d.getDate() + parseInt(planInput.value));
@@ -129,15 +133,6 @@ if (!endDateInput.value) return alert("Please select an end date");
       }
 
       if (data && data.success) {
-        alert("✅ Admission Saved Successfully");
-         triggerMembershipSync().catch(() => {});
-        admissionForm.reset();
-endDateInput.value = "";
-finalAmountInput.value = "";
-return;
-      }
-
-      if (/success/i.test(raw)) {
         alert("✅ Admission Saved Successfully");
          triggerMembershipSync().catch(() => {});
         admissionForm.reset();
