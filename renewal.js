@@ -127,14 +127,19 @@ function enableRenewalForm() {
 
 function calculateRenewEndDate() {
   if (!newPlan.value || !renewStartDate.value) {
-    renewEndDate.value = "";
+    if (newPlan.value !== "custom") {
+      renewEndDate.value = "";
+    }
     return;
   }
 
   if (newPlan.value === "custom") {
-    renewEndDate.value = "";
+    renewEndDate.readOnly = false;
+    renewEndDate.required = true;
     return;
   }
+
+  renewEndDate.readOnly = true;
 
   const d = new Date(renewStartDate.value);
   d.setDate(d.getDate() + parseInt(newPlan.value));
@@ -185,37 +190,25 @@ renewalForm.addEventListener("submit", function (e) {
         data = null;
       }
 
-      if (data && data.success) {
-        alert("✅ Renewal Saved Successfully");
-        triggerMembershipSync().catch(() => {});
-        renewalForm.reset();
-        memberName.value = "";
-        memberId.value = "";
-        currentPlan.value = "";
-        currentEndDate.value = "";
-        hiddenAdmissionId.value = "";
-        hiddenMobile.value = "";
-        renewEndDate.value = "";
-        finalAmount.value = "";
-        return;
-      }
+if (data && data.success === true) {
+  alert("✅ Renewal Saved Successfully");
+  triggerMembershipSync().catch(() => {});
 
-      if (/success/i.test(raw)) {
-        alert("✅ Renewal Saved Successfully");
-        triggerMembershipSync().catch(() => {});
-        renewalForm.reset();
-        memberName.value = "";
-        memberId.value = "";
-        currentPlan.value = "";
-        currentEndDate.value = "";
-        hiddenAdmissionId.value = "";
-        hiddenMobile.value = "";
-        renewEndDate.value = "";
-        finalAmount.value = "";
-        return;
-      }
+  renewalForm.reset();
+  memberName.value = "";
+  memberId.value = "";
+  currentPlan.value = "";
+  currentEndDate.value = "";
+  hiddenAdmissionId.value = "";
+  hiddenMobile.value = "";
+  renewEndDate.value = "";
+  finalAmount.value = "";
+  renewEndDate.readOnly = false;
 
-      alert("❌ Error saving renewal: " + raw);
+  return;
+}
+
+alert("❌ Error saving renewal: " + (data?.message || data?.error || raw));
     })
     .catch(err => {
       console.error(err);
