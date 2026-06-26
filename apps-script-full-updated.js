@@ -111,7 +111,7 @@ Let’s build your best version together`;
           data.address || "",
           data.injuries || "",
           Number(data.amountPaid) || 0,
-          Math.max((Number(data.finalAmount) || 0) - (Number(data.amountPaid) || 0), 0)
+          Number(data.pendingAmount) || Math.max((Number(data.finalAmount) || 0) - (Number(data.amountPaid) || 0), 0)
         ]);
 
         SpreadsheetApp.flush();
@@ -242,7 +242,7 @@ Let’s build your best version together`;
           data.paymentStatus || "",
           data.remarks || "",
           Number(data.amountPaid) || 0,
-          Math.max((Number(data.finalAmount) || 0) - (Number(data.amountPaid) || 0), 0)
+          Number(data.pendingAmount) || Math.max((Number(data.finalAmount) || 0) - (Number(data.amountPaid) || 0), 0)
         ]);
 
         SpreadsheetApp.flush();

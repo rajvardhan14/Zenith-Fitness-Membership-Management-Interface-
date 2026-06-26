@@ -92,30 +92,17 @@
       <h2>Payment Details</h2>
 
       <div class="row">
-        <input type="number" id="totalAmount" placeholder="Total Amount" required oninput="calculateFinalAmount()">
-        <input type="number" id="discount" placeholder="Discount" required oninput="calculateFinalAmount()">
+        <input type="number" id="amountPaid" placeholder="Amount Paid" required>
+        <input type="number" id="pendingAmount" placeholder="Pending Amount" required>
       </div>
 
       <div class="row">
-        <input type="number" id="finalAmount" placeholder="Final Amount" readonly>
-
-        <select id="paymentMode" required>
+        <select id="paymentMode">
           <option value="">Payment Mode</option>
           <option>Cash</option>
           <option>UPI</option>
           <option>Card</option>
         </select>
-      </div>
-
-      <div class="row">
-        <select id="paymentStatus" required>
-          <option value="">Payment Status</option>
-          <option>Paid</option>
-          <option>Partial</option>
-          <option>Pending</option>
-        </select>
-
-        <input type="number" id="amountPaid" placeholder="Amount Received" required>
       </div>
     </div>
 

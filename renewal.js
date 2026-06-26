@@ -19,12 +19,9 @@ const newPlan = document.getElementById("newPlan");
 const renewStartDate = document.getElementById("renewStartDate");
 const renewEndDate = document.getElementById("renewEndDate");
 
-const totalAmount = document.getElementById("totalAmount");
-const discount = document.getElementById("discount");
-const finalAmount = document.getElementById("finalAmount");
 const paymentMode = document.getElementById("paymentMode");
-const paymentStatus = document.getElementById("paymentStatus");
 const amountPaid = document.getElementById("amountPaid");
+const pendingAmount = document.getElementById("pendingAmount");
 const saveBtn = document.getElementById("saveRenewalBtn");
 
 const RENEWAL_BTN_DEFAULT = saveBtn ? saveBtn.textContent : "Save Renewal";
@@ -168,11 +165,9 @@ function enableRenewalForm() {
     newPlan,
     renewStartDate,
     renewEndDate,
-    totalAmount,
-    discount,
     paymentMode,
-    paymentStatus,
     amountPaid,
+    pendingAmount,
     saveBtn
   ].forEach(el => {
     el.disabled = false;
@@ -191,32 +186,24 @@ function calculateRenewEndDate() {
   renewEndDate.value = d.toISOString().split("T")[0];
 }
 
-/* =========================
-   FINAL AMOUNT
-========================= */
-function calculateFinalAmount() {
-  const finalDue = (Number(totalAmount.value) || 0) - (Number(discount.value) || 0);
-  finalAmount.value = finalDue;
-  syncAmountPaidWithStatus();
-}
+function getPaymentSummary() {
+  const paid = Number(amountPaid.value) || 0;
+  const pending = Number(pendingAmount.value) || 0;
+  const finalDue = paid + pending;
+  let status = "Pending";
 
-function syncAmountPaidWithStatus() {
-  const status = paymentStatus.value.toLowerCase();
-  const finalDue = Number(finalAmount.value) || 0;
-
-  if (status === "paid") {
-    amountPaid.value = finalDue;
-    amountPaid.readOnly = true;
-    return;
+  if (finalDue > 0 && pending <= 0) {
+    status = "Paid";
+  } else if (paid > 0 && pending > 0) {
+    status = "Partial";
   }
 
-  if (status === "pending") {
-    amountPaid.value = 0;
-    amountPaid.readOnly = true;
-    return;
-  }
-
-  amountPaid.readOnly = false;
+  return {
+    amountPaid: paid,
+    pendingAmount: pending,
+    finalAmount: finalDue,
+    paymentStatus: status
+  };
 }
 
 /* =========================
@@ -224,6 +211,11 @@ function syncAmountPaidWithStatus() {
 ========================= */
 renewalForm.addEventListener("submit", function (e) {
   e.preventDefault();
+  if (!renewEndDate.value) return alert("Please select an end date");
+
+  const payment = getPaymentSummary();
+  if (payment.finalAmount <= 0) return alert("Please enter amount paid or pending amount");
+  if (payment.amountPaid > 0 && !paymentMode.value) return alert("Please select payment mode");
 
   const formData = new FormData();
   formData.append("action", "saveRenewal");
@@ -233,11 +225,12 @@ renewalForm.addEventListener("submit", function (e) {
   formData.append("plan", newPlan.value);
   formData.append("startDate", renewStartDate.value);
   formData.append("endDate", renewEndDate.value);
-  formData.append("amount", totalAmount.value);
-  formData.append("discount", discount.value);
-  formData.append("finalAmount", finalAmount.value);
-  formData.append("paymentStatus", paymentStatus.value);
-  formData.append("amountPaid", amountPaid.value);
+  formData.append("amount", payment.finalAmount);
+  formData.append("discount", 0);
+  formData.append("finalAmount", payment.finalAmount);
+  formData.append("paymentStatus", payment.paymentStatus);
+  formData.append("amountPaid", payment.amountPaid);
+  formData.append("pendingAmount", payment.pendingAmount);
   formData.append("paymentMode", paymentMode.value);
 
   setRenewalSubmitting(true);
@@ -293,6 +286,3 @@ renewalForm.addEventListener("submit", function (e) {
 ========================= */
 newPlan.addEventListener("change", calculateRenewEndDate);
 renewStartDate.addEventListener("change", calculateRenewEndDate);
-totalAmount.addEventListener("input", calculateFinalAmount);
-discount.addEventListener("input", calculateFinalAmount);
-paymentStatus.addEventListener("change", syncAmountPaidWithStatus);

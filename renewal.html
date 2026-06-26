@@ -79,28 +79,17 @@
       <h2>Payment</h2>
 
       <div class="row">
-        <input type="number" id="totalAmount" required placeholder="Total Amount" disabled>
-        <input type="number" id="discount" required placeholder="Discount" disabled>
+        <input type="number" id="amountPaid" required placeholder="Amount Paid" disabled>
+        <input type="number" id="pendingAmount" required placeholder="Pending Amount" disabled>
       </div>
 
       <div class="row">
-        <input type="number" id="finalAmount" placeholder="Final Amount" readonly disabled>
-        <select id="paymentMode" required disabled>
+        <select id="paymentMode" disabled>
           <option value="">Payment Mode</option>
           <option>Cash</option>
           <option>UPI</option>
           <option>Card</option>
         </select>
-      </div>
-
-      <div class="row">
-        <select id="paymentStatus" required disabled>
-          <option value="">Payment Status</option>
-          <option>Paid</option>
-          <option>Partial</option>
-          <option>Pending</option>
-        </select>
-        <input type="number" id="amountPaid" required placeholder="Amount Received" disabled>
       </div>
     </div>
 

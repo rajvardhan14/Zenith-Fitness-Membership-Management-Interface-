@@ -11,12 +11,9 @@ const planInput = document.getElementById("plan");
 const categoryInput = document.getElementById("category");
 const startDateInput = document.getElementById("startDate");
 const endDateInput = document.getElementById("endDate");
-const totalAmountInput = document.getElementById("totalAmount");
-const discountInput = document.getElementById("discount");
-const finalAmountInput = document.getElementById("finalAmount");
 const paymentModeInput = document.getElementById("paymentMode");
-const paymentStatusInput = document.getElementById("paymentStatus");
 const amountPaidInput = document.getElementById("amountPaid");
+const pendingAmountInput = document.getElementById("pendingAmount");
 const remarksInput = document.getElementById("remarks");
 const birthDateInput = document.getElementById("birthDate");
 const addressInput = document.getElementById("address");
@@ -36,34 +33,24 @@ function calculateEndDate() {
   endDateInput.value = d.toISOString().split("T")[0];
 }
 
-/* =========================
-   AUTO CALCULATE FINAL AMOUNT
-========================= */
-function calculateFinalAmount() {
-  const finalAmount = (Number(totalAmountInput.value) || 0) - (Number(discountInput.value) || 0);
-  finalAmountInput.value = finalAmount;
-  syncAmountPaidWithStatus();
-}
+function getPaymentSummary() {
+  const amountPaid = Number(amountPaidInput.value) || 0;
+  const pendingAmount = Number(pendingAmountInput.value) || 0;
+  const finalAmount = amountPaid + pendingAmount;
+  let paymentStatus = "Pending";
 
-function syncAmountPaidWithStatus() {
-  if (!amountPaidInput || !paymentStatusInput) return;
-
-  const status = paymentStatusInput.value.toLowerCase();
-  const finalAmount = Number(finalAmountInput.value) || 0;
-
-  if (status === "paid") {
-    amountPaidInput.value = finalAmount;
-    amountPaidInput.readOnly = true;
-    return;
+  if (finalAmount > 0 && pendingAmount <= 0) {
+    paymentStatus = "Paid";
+  } else if (amountPaid > 0 && pendingAmount > 0) {
+    paymentStatus = "Partial";
   }
 
-  if (status === "pending") {
-    amountPaidInput.value = 0;
-    amountPaidInput.readOnly = true;
-    return;
-  }
-
-  amountPaidInput.readOnly = false;
+  return {
+    amountPaid,
+    pendingAmount,
+    finalAmount,
+    paymentStatus
+  };
 }
 
 function setAdmissionSubmitting(isSubmitting) {
@@ -161,6 +148,11 @@ admissionForm.addEventListener("submit", function (e) {
   if (!planInput.value) return alert("Please select a plan");
   if (!categoryInput.value) return alert("Please select a membership type");
   if (!startDateInput.value) return alert("Please select a start date");
+  if (!endDateInput.value) return alert("Please select an end date");
+
+  const payment = getPaymentSummary();
+  if (payment.finalAmount <= 0) return alert("Please enter amount paid or pending amount");
+  if (payment.amountPaid > 0 && !paymentModeInput.value) return alert("Please select payment mode");
 
   const formData = new FormData();
   formData.append("name", nameInput.value);
@@ -171,12 +163,13 @@ admissionForm.addEventListener("submit", function (e) {
   formData.append("category", categoryInput.value);
   formData.append("startDate", startDateInput.value);
   formData.append("endDate", endDateInput.value);
-  formData.append("totalAmount", totalAmountInput.value);
-  formData.append("discount", discountInput.value);
-  formData.append("finalAmount", finalAmountInput.value);
-  formData.append("amountPaid", amountPaidInput.value);
+  formData.append("totalAmount", payment.finalAmount);
+  formData.append("discount", 0);
+  formData.append("finalAmount", payment.finalAmount);
+  formData.append("amountPaid", payment.amountPaid);
+  formData.append("pendingAmount", payment.pendingAmount);
   formData.append("paymentMode", paymentModeInput.value);
-  formData.append("paymentStatus", paymentStatusInput.value);
+  formData.append("paymentStatus", payment.paymentStatus);
   formData.append("remarks", remarksInput.value);
   formData.append("action", "admission");
   formData.append("birthDate", birthDateInput.value);
@@ -244,6 +237,3 @@ admissionForm.addEventListener("submit", function (e) {
 ========================= */
 planInput.addEventListener("change", calculateEndDate);
 startDateInput.addEventListener("change", calculateEndDate);
-totalAmountInput.addEventListener("input", calculateFinalAmount);
-discountInput.addEventListener("input", calculateFinalAmount);
-paymentStatusInput.addEventListener("change", syncAmountPaidWithStatus);
