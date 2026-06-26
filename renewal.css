@@ -57,10 +57,22 @@ input, select {
   min-width: 0;
   flex: 1;
   width: 100%;
+  max-width: 100%;
+  display: block;
   padding: 12px;
   border-radius: 6px;
   border: none;
   outline: none;
+}
+
+.row > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+input[type="date"] {
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 input[readonly] {

@@ -70,7 +70,9 @@ input,
 select,
 textarea {
   min-width: 0;
+  max-width: 100%;
   width: 100%;
+  display: block;
   padding: 13px 14px;
   background: #132a44;
   border: 1px solid rgba(212, 175, 55, 0.25);
@@ -78,6 +80,16 @@ textarea {
   color: #ffffff;
   font-size: 14px;
   transition: all 0.25s ease;
+}
+
+.row > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+input[type="date"] {
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 input::placeholder,
@@ -271,6 +283,8 @@ button:active {
   select,
   textarea,
   button {
+    width: 100%;
+    max-width: 100%;
     min-height: 48px;
     font-size: 16px;
   }
