@@ -547,6 +547,7 @@ function processPostProcessQueue() {
 
     if (renewalPending === "1") {
       updateRenewalsList_();
+      updatePendingAmountsList_();
       applyRenewalColorCoding_();
 
       props.deleteProperty("POST_PROCESS_PENDING");
@@ -1101,6 +1102,7 @@ function formatAnyDateToKey_(value, tz) {
 
 function forceRebuildRenewalsNow() {
   updateRenewalsList_();
+  updatePendingAmountsList_();
   applyRenewalColorCoding_();
   return "Renewals List rebuilt successfully.";
 }
@@ -1349,6 +1351,147 @@ function applyRenewalColorCoding_() {
 }
 
 /* =========================================================
+   PENDING AMOUNTS
+========================================================= */
+
+function forceRebuildPendingAmountsNow() {
+  updatePendingAmountsList_();
+  return "Pending Amounts rebuilt successfully.";
+}
+
+function updatePendingAmountsList_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = getOrCreateSheet_(ss, "Pending Amounts", [
+    "Admission ID",
+    "Name",
+    "Mobile",
+    "Plan",
+    "End Date",
+    "Amount Paid",
+    "Pending Amount",
+    "Payment Status",
+    "Reminder Message"
+  ]);
+
+  try { sheet.getDataRange().breakApart(); } catch (_) {}
+  sheet.clearContents().clearFormats();
+  sheet.appendRow([
+    "Admission ID",
+    "Name",
+    "Mobile",
+    "Plan",
+    "End Date",
+    "Amount Paid",
+    "Pending Amount",
+    "Payment Status",
+    "Reminder Message"
+  ]);
+  styleHeaderRow_(sheet, 9);
+
+  const latestMap = new Map();
+  const configs = getMemberSourceConfigs_();
+
+  configs.forEach(cfg => {
+    const source = ss.getSheetByName(cfg.name);
+    if (!source || source.getLastRow() < 2) return;
+
+    const data = source.getDataRange().getValues();
+
+    for (let i = 1; i < data.length; i++) {
+      const admissionId = String(data[i][cfg.idCol] || "").trim();
+      if (!admissionId) continue;
+
+      const endDate = parseDateSafe_(data[i][cfg.endDateCol]);
+      if (!endDate) continue;
+
+      const existing = latestMap.get(admissionId);
+      if (existing && existing.endDate >= endDate) continue;
+
+      const record = {
+        sheet: source,
+        row: i + 1,
+        values: data[i],
+        cfg: cfg,
+        admissionId: admissionId,
+        mobile: normalizePhoneForStorage_(data[i][cfg.mobileCol]),
+        name: data[i][cfg.nameCol] || ""
+      };
+
+      const payment = getPaymentSnapshotForRecord_(record);
+
+      latestMap.set(admissionId, {
+        admissionId: admissionId,
+        name: record.name,
+        mobile: record.mobile,
+        plan: data[i][cfg.planCol] || "",
+        endDate: endDate,
+        amountPaid: payment.amountPaid,
+        pendingAmount: payment.pendingAmount,
+        paymentStatus: payment.paymentStatus || inferPaymentStatus_(payment.amountPaid, payment.pendingAmount),
+        sourceSheet: cfg.name
+      });
+    }
+  });
+
+  const rows = [...latestMap.values()]
+    .filter(member => Number(member.pendingAmount) > 0)
+    .sort((a, b) => b.pendingAmount - a.pendingAmount || a.name.localeCompare(b.name))
+    .map(member => {
+      const reminderMessage = createPendingAmountReminderMessage_(member);
+      const whatsappLink = member.mobile
+        ? createWhatsAppLink_(member.mobile, reminderMessage, "Send Reminder")
+        : "";
+
+      return [
+        member.admissionId,
+        member.name,
+        member.mobile,
+        member.plan,
+        member.endDate,
+        Number(member.amountPaid) || 0,
+        Number(member.pendingAmount) || 0,
+        member.paymentStatus,
+        whatsappLink
+      ];
+    });
+
+  if (!rows.length) {
+    sheet.appendRow(["No pending amounts", "", "", "", "", "", "", "", ""]);
+    sheet.getRange(2, 1, 1, 9)
+      .merge()
+      .setHorizontalAlignment("center")
+      .setFontWeight("bold")
+      .setFontColor("#067647");
+    return;
+  }
+
+  sheet.getRange(2, 1, rows.length, 9).setValues(rows);
+  sheet.getRange(2, 5, rows.length, 1).setNumberFormat("dd-MM-yyyy");
+  sheet.autoResizeColumns(1, 9);
+}
+
+function inferPaymentStatus_(amountPaid, pendingAmount) {
+  const paid = Number(amountPaid) || 0;
+  const pending = Number(pendingAmount) || 0;
+
+  if (pending <= 0 && paid > 0) return "Paid";
+  if (paid > 0 && pending > 0) return "Partial";
+  return "Pending";
+}
+
+function createPendingAmountReminderMessage_(member) {
+  return `Hello ${member.name || ""},\n\n` +
+    `This is a gentle reminder from Zenith Fitness.\n\n` +
+    `Admission ID: ${member.admissionId || ""}\n` +
+    `Plan: ${member.plan || ""}\n` +
+    `Pending Amount: Rs. ${Number(member.pendingAmount) || 0}\n\n` +
+    `Kindly clear your pending amount at your earliest convenience.\n\n` +
+    `You may pay via UPI / GPay on 9272112745.\n\n` +
+    `Thank you,\n` +
+    `Team Zenith Fitness`;
+}
+
+/* =========================================================
    STYLING / MANUAL UTILS
 ========================================================= */
 
@@ -1368,6 +1511,7 @@ function dailyRenewalColorTrigger() {
 function rebuildEverythingNow() {
   rebuildTodayEndOfDayReport_();
   updateRenewalsList_();
+  updatePendingAmountsList_();
   applyRenewalColorCoding_();
   return "All summary sheets rebuilt.";
 }
@@ -1445,6 +1589,7 @@ function updatePendingPayment_(data, ss) {
       remarks
     ]);
 
+    enqueuePostProcess_();
     enqueueEndOfDayRebuild_();
 
     return json_({
