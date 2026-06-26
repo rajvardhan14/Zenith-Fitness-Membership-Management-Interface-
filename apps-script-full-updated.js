@@ -159,6 +159,7 @@ Let’s build your best version together`;
           }
         }
 
+        updatePendingAmountsList_();
         enqueuePostProcess_();
         enqueueEndOfDayRebuild_();
 
@@ -285,6 +286,7 @@ Let’s build your best version together`;
           );
         }
 
+        updatePendingAmountsList_();
         enqueuePostProcess_();
         enqueueEndOfDayRebuild_();
 
@@ -1589,6 +1591,7 @@ function updatePendingPayment_(data, ss) {
       remarks
     ]);
 
+    updatePendingAmountsList_();
     enqueuePostProcess_();
     enqueueEndOfDayRebuild_();
 
