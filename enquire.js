@@ -1,5 +1,5 @@
 const SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbyt3UviMpgrQfPbFtk8dLkrBLNn1IjTpFpLnOa42012GtQWNxp1CuGj4peDbIoc3XGq/exec";
+  "https://script.google.com/macros/s/AKfycbwVjje6NL54Uj8HghM-seBsHaHkuAdLRO9JZZ1jhYWo10KnnVNHxdW4TVn42xvIPJ5GkA/exec";
 
 const enquiryForm = document.getElementById("enquiryForm");
 const submitEnquiryBtn = document.getElementById("submitEnquiryBtn");
@@ -18,6 +18,48 @@ function setEnquirySubmitting(isSubmitting) {
   if (!submitEnquiryBtn) return;
   submitEnquiryBtn.disabled = isSubmitting;
   submitEnquiryBtn.textContent = isSubmitting ? "Submitting..." : ENQUIRY_BTN_DEFAULT;
+}
+
+function normalizePhoneForWhatsApp(mobile) {
+  return String(mobile || "").replace(/\D/g, "").slice(-10);
+}
+
+function createEnquiryWhatsAppMessage() {
+  return `Thank You for enquiring at Zenith Fitness :)
+
+We're located behind ITI College, Hanuman Nagar, Pachgaon Road, Kolhapur.
+
+Here is what we offer:
+
+-> Strength Training
+-> Cardio
+-> Functional Training
+-> Yoga
+-> Personal Training
+
+Gym Timings:
+-> Mon-Sat: 6:00 AM - 11:00 PM
+-> Sunday: 6:30 AM - 10:00 AM
+
+-> FREE one-day trial available!
+
+For enquiries or to start your fitness journey:
+-> 9272112745
+
+Instagram:
+-> https://www.instagram.com/zenithfitness360`;
+}
+
+function askToSendWhatsApp(phone, message) {
+  const formattedPhone = normalizePhoneForWhatsApp(phone);
+  if (!formattedPhone) return;
+
+  if (confirm("Enquiry saved. Send WhatsApp message now?")) {
+    window.open(
+      `https://wa.me/91${formattedPhone}?text=${encodeURIComponent(message)}`,
+      "_blank"
+    );
+  }
 }
 
 enquiryForm.addEventListener("submit", function (e) {
@@ -54,7 +96,10 @@ enquiryForm.addEventListener("submit", function (e) {
       }
 
       if (data && data.success) {
+        const whatsappPhone = contact;
+        const whatsappMessage = createEnquiryWhatsAppMessage();
         alert("✅ Enquiry Submitted Successfully");
+        askToSendWhatsApp(whatsappPhone, whatsappMessage);
         enquiryForm.reset();
         return;
       }

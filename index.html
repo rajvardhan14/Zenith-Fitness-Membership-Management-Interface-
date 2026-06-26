@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Zenith Fitness | Admission Form</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -11,15 +12,19 @@
 
   <!-- NAVBAR -->
   <nav class="navbar">
-    <div class="nav-brand">🏋️ Zenith Fitness</div>
+    <a class="nav-brand" href="index.html" aria-label="Zenith Fitness home">
+      <img src="assets/zenith-logo.png" alt="Zenith Fitness logo">
+      <span>Zenith Fitness</span>
+    </a>
     <div class="nav-links">
       <a href="index.html" class="active">New Admission</a>
       <a href="renewal.html">Renewal</a>
+      <a href="update.html">Member Update</a>
       <a href="enquire.html">Enquire</a>
     </div>
   </nav>
 
-  <h1>🏋️ Zenith Fitness Admission Form</h1>
+  <h1>Zenith Fitness Admission Form</h1>
 
   <form id="admissionForm">
 
@@ -44,7 +49,7 @@
   </div>
 
   <div class="row">
-    <input type="text" id="birthDate" placeholder="BirthDate" inputmode="numeric">
+    <input placeholder="Birth Date" type="date" id="birthDate">
     <input type="text" id="address" placeholder="Address">
   </div>
 
@@ -60,25 +65,24 @@
 
       <div class="row">
         <select id="plan" required onchange="calculateEndDate()">
-  <option value="">Select Plan</option>
-  <option value="30">1 Month</option>
-  <option value="90">3 Months</option>
-  <option value="180">6 Months</option>
-  <option value="365">12 Months</option>
-  <option value="custom">Customize Package</option>
-</select>
+          <option value="">Select Plan</option>
+          <option value="30">1 Month</option>
+          <option value="90">3 Months</option>
+          <option value="180">6 Months</option>
+          <option value="365">12 Months</option>
+        </select>
 
         <select id="category" required>
           <option value="">Membership Type</option>
           <option>Regular</option>
           <option>Happy Hours</option>
-          <option>Zumba</option>
+          <option>Personal Training</option>
         </select>
       </div>
 
       <div class="row">
         <input type="date" id="startDate" required onchange="calculateEndDate()">
-        <input type="date" id="endDate">
+        <input type="date" id="endDate" readonly>
       </div>
     </div>
 
@@ -109,6 +113,8 @@
           <option>Partial</option>
           <option>Pending</option>
         </select>
+
+        <input type="number" id="amountPaid" placeholder="Amount Received" required>
       </div>
     </div>
 
