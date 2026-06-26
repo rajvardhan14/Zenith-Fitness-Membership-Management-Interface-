@@ -159,7 +159,16 @@ Let’s build your best version together`;
           }
         }
 
-        updatePendingAmountsList_();
+        upsertPendingAmountEntry_(ss, {
+          admissionId: result.admissionId,
+          name: data.name || "",
+          mobile: normalizePhoneForStorage_(data.mobile),
+          plan: result.planLabel,
+          endDate: parseDateForSheet_(data.endDate),
+          amountPaid: Number(data.amountPaid) || 0,
+          pendingAmount: Number(data.pendingAmount) || Math.max((Number(data.finalAmount) || 0) - (Number(data.amountPaid) || 0), 0),
+          paymentStatus: data.paymentStatus || inferPaymentStatus_(data.amountPaid, data.pendingAmount)
+        });
         enqueuePostProcess_();
         enqueueEndOfDayRebuild_();
 
@@ -286,7 +295,16 @@ Let’s build your best version together`;
           );
         }
 
-        updatePendingAmountsList_();
+        upsertPendingAmountEntry_(ss, {
+          admissionId: data.admissionId || "",
+          name: data.name || "",
+          mobile: normalizePhoneForStorage_(data.mobile),
+          plan: result.planLabel,
+          endDate: parseDateForSheet_(data.endDate),
+          amountPaid: Number(data.amountPaid) || 0,
+          pendingAmount: Number(data.pendingAmount) || Math.max((Number(data.finalAmount) || 0) - (Number(data.amountPaid) || 0), 0),
+          paymentStatus: data.paymentStatus || inferPaymentStatus_(data.amountPaid, data.pendingAmount)
+        });
         enqueuePostProcess_();
         enqueueEndOfDayRebuild_();
 
@@ -1361,8 +1379,7 @@ function forceRebuildPendingAmountsNow() {
   return "Pending Amounts rebuilt successfully.";
 }
 
-function updatePendingAmountsList_() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+function getOrCreatePendingAmountsSheet_(ss) {
   const sheet = getOrCreateSheet_(ss, "Pending Amounts", [
     "Admission ID",
     "Name",
@@ -1374,6 +1391,92 @@ function updatePendingAmountsList_() {
     "Payment Status",
     "Reminder Message"
   ]);
+
+  if (sheet.getLastRow() < 1) {
+    sheet.appendRow([
+      "Admission ID",
+      "Name",
+      "Mobile",
+      "Plan",
+      "End Date",
+      "Amount Paid",
+      "Pending Amount",
+      "Payment Status",
+      "Reminder Message"
+    ]);
+    styleHeaderRow_(sheet, 9);
+  }
+
+  return sheet;
+}
+
+function upsertPendingAmountEntry_(ss, member) {
+  if (!member || !member.admissionId) return;
+
+  const sheet = getOrCreatePendingAmountsSheet_(ss);
+  const pendingAmount = Number(member.pendingAmount) || 0;
+  const row = findPendingAmountRow_(sheet, member.admissionId);
+
+  if (pendingAmount <= 0) {
+    if (row > 1) sheet.deleteRow(row);
+    return;
+  }
+
+  clearPendingEmptyMessage_(sheet);
+
+  const rowData = buildPendingAmountRow_(member);
+  const targetRow = row > 1 ? row : sheet.getLastRow() + 1;
+
+  sheet.getRange(targetRow, 1, 1, rowData.length).setValues([rowData]);
+  sheet.getRange(targetRow, 5).setNumberFormat("dd-MM-yyyy");
+}
+
+function findPendingAmountRow_(sheet, admissionId) {
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return -1;
+
+  const finder = sheet
+    .getRange(2, 1, lastRow - 1, 1)
+    .createTextFinder(String(admissionId || "").trim())
+    .matchEntireCell(true)
+    .findNext();
+
+  return finder ? finder.getRow() : -1;
+}
+
+function clearPendingEmptyMessage_(sheet) {
+  if (sheet.getLastRow() !== 2) return;
+
+  const firstCell = String(sheet.getRange(2, 1).getValue() || "").trim().toLowerCase();
+  if (firstCell !== "no pending amounts") return;
+
+  try { sheet.getRange(2, 1, 1, 9).breakApart(); } catch (_) {}
+  sheet.getRange(2, 1, 1, 9).clearContent().clearFormat();
+  sheet.deleteRow(2);
+}
+
+function buildPendingAmountRow_(member) {
+  const reminderMessage = createPendingAmountReminderMessage_(member);
+  const whatsappLink = member.mobile
+    ? createWhatsAppLink_(member.mobile, reminderMessage, "Send Reminder")
+    : "";
+
+  return [
+    member.admissionId,
+    member.name || "",
+    normalizePhoneForStorage_(member.mobile),
+    member.plan || "",
+    parseDateForSheet_(member.endDate),
+    Number(member.amountPaid) || 0,
+    Number(member.pendingAmount) || 0,
+    member.paymentStatus || inferPaymentStatus_(member.amountPaid, member.pendingAmount),
+    whatsappLink
+  ];
+}
+
+function updatePendingAmountsList_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = getOrCreatePendingAmountsSheet_(ss);
 
   try { sheet.getDataRange().breakApart(); } catch (_) {}
   sheet.clearContents().clearFormats();
@@ -1591,7 +1694,16 @@ function updatePendingPayment_(data, ss) {
       remarks
     ]);
 
-    updatePendingAmountsList_();
+    upsertPendingAmountEntry_(ss, {
+      admissionId: record.admissionId,
+      name: record.name,
+      mobile: record.mobile,
+      plan: record.sheet.getRange(record.row, record.cfg.planCol + 1).getValue(),
+      endDate: record.sheet.getRange(record.row, record.cfg.endDateCol + 1).getValue(),
+      amountPaid: newPaidAmount,
+      pendingAmount: newPendingAmount,
+      paymentStatus: newStatus
+    });
     enqueuePostProcess_();
     enqueueEndOfDayRebuild_();
 
