@@ -167,6 +167,7 @@ function enableRenewalForm() {
   [
     newPlan,
     renewStartDate,
+    renewEndDate,
     totalAmount,
     discount,
     paymentMode,
@@ -183,6 +184,7 @@ function enableRenewalForm() {
 ========================= */
 function calculateRenewEndDate() {
   if (!newPlan.value || !renewStartDate.value) return;
+  if (newPlan.value === "custom") return;
 
   const d = new Date(renewStartDate.value);
   d.setDate(d.getDate() + parseInt(newPlan.value));

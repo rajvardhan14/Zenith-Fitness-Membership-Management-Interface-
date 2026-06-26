@@ -29,6 +29,7 @@ const ADMISSION_BTN_DEFAULT = submitAdmissionBtn ? submitAdmissionBtn.textConten
 ========================= */
 function calculateEndDate() {
   if (!startDateInput.value || !planInput.value) return;
+  if (planInput.value === "custom") return;
 
   const d = new Date(startDateInput.value);
   d.setDate(d.getDate() + parseInt(planInput.value));

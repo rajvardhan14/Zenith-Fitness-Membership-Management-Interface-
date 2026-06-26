@@ -70,6 +70,7 @@
           <option value="90">3 Months</option>
           <option value="180">6 Months</option>
           <option value="365">12 Months</option>
+          <option value="custom">Customize Package</option>
         </select>
 
         <select id="category" required>
@@ -82,7 +83,7 @@
 
       <div class="row">
         <input type="date" id="startDate" required onchange="calculateEndDate()">
-        <input type="date" id="endDate" readonly>
+        <input type="date" id="endDate" required>
       </div>
     </div>
 
