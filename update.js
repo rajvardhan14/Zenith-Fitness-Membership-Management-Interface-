@@ -6,6 +6,7 @@ const searchBtn = document.getElementById("searchBtn");
 const memberName = document.getElementById("memberName");
 const memberId = document.getElementById("memberId");
 const currentPlan = document.getElementById("currentPlan");
+const currentStartDate = document.getElementById("currentStartDate");
 const currentEndDate = document.getElementById("currentEndDate");
 const currentPaymentStatus = document.getElementById("currentPaymentStatus");
 const currentPendingAmount = document.getElementById("currentPendingAmount");
@@ -105,6 +106,7 @@ async function fetchMember() {
     memberName.value = data.name || "";
     memberId.value = data.admissionId || "";
     currentPlan.value = data.plan || "";
+    currentStartDate.value = data.startDate || "";
     currentEndDate.value = data.endDate || "";
     currentPaymentStatus.value = data.paymentStatus || "";
     currentPendingAmount.value = Number(data.pendingAmount) || 0;
