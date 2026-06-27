@@ -59,37 +59,6 @@ function setAdmissionSubmitting(isSubmitting) {
   submitAdmissionBtn.textContent = isSubmitting ? "Submitting..." : ADMISSION_BTN_DEFAULT;
 }
 
-function isHostedOnGithubPages() {
-  return window.location.hostname.endsWith("github.io");
-}
-
-async function submitAdmissionData(formData) {
-  try {
-    const res = await fetch(SCRIPT_URL, {
-      method: "POST",
-      body: formData
-    });
-
-    return {
-      fallback: false,
-      text: await res.text()
-    };
-  } catch (err) {
-    if (!isHostedOnGithubPages()) throw err;
-
-    await fetch(SCRIPT_URL, {
-      method: "POST",
-      body: formData,
-      mode: "no-cors"
-    });
-
-    return {
-      fallback: true,
-      text: ""
-    };
-  }
-}
-
 function extractNumericId(admissionId) {
   return admissionId ? admissionId.replace(/\D/g, '') : null;
 }
@@ -209,15 +178,13 @@ admissionForm.addEventListener("submit", function (e) {
 
   setAdmissionSubmitting(true);
 
-  submitAdmissionData(formData)
-    .then(async result => {
-      if (result.fallback) {
-        alert("✅ Admission submitted. Please check Google Sheet to confirm it saved.");
-        admissionForm.reset();
-        return;
-      }
-
-      const raw = (result.text || "").trim();
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    body: formData
+  })
+    .then(res => res.text())
+    .then(async txt => {
+      const raw = (txt || "").trim();
 
       if (raw === "DUPLICATE_MOBILE") {
         alert("❌ This mobile number is already registered");
@@ -236,11 +203,9 @@ admissionForm.addEventListener("submit", function (e) {
   const whatsappMessage = createAdmissionWhatsAppMessage(admissionId);
   const whatsappPhone = mobileInput.value;
   
-  if (!isHostedOnGithubPages()) {
-    await createUserInDevice(admissionId, nameInput.value);
-  }
+  await createUserInDevice(admissionId, nameInput.value);
 
-  alert(isHostedOnGithubPages() ? "✅ Admission Saved Successfully" : "✅ Admission Saved & User Created in Device");
+  alert("✅ Admission Saved & User Created in Device");
   askToSendWhatsApp(whatsappPhone, whatsappMessage);
   admissionForm.reset();
   return;
