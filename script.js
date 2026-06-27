@@ -59,6 +59,14 @@ function setAdmissionSubmitting(isSubmitting) {
   submitAdmissionBtn.textContent = isSubmitting ? "Submitting..." : ADMISSION_BTN_DEFAULT;
 }
 
+function isDuplicateMobileResponse(raw, data) {
+  const rawText = String(raw || "").trim().toLowerCase();
+  const message = String((data && data.message) || "").trim().toLowerCase();
+  return rawText === "duplicate_mobile" ||
+    rawText.includes("duplicate mobile") ||
+    message.includes("duplicate mobile");
+}
+
 function extractNumericId(admissionId) {
   return admissionId ? admissionId.replace(/\D/g, '') : null;
 }
@@ -198,6 +206,11 @@ admissionForm.addEventListener("submit", function (e) {
         data = null;
       }
 
+      if (isDuplicateMobileResponse(raw, data)) {
+        alert("❌ This mobile number is already registered");
+        return;
+      }
+
       if (data && data.success) {
   const admissionId = data.admissionId || data.id || "";
   const whatsappMessage = createAdmissionWhatsAppMessage(admissionId);
@@ -205,11 +218,16 @@ admissionForm.addEventListener("submit", function (e) {
   
   await createUserInDevice(admissionId, nameInput.value);
 
-  alert("✅ Admission Saved & User Created in Device");
+  alert("✅ Admission Saved Successfully");
   askToSendWhatsApp(whatsappPhone, whatsappMessage);
   admissionForm.reset();
   return;
 }
+
+      if (data && data.success === false) {
+        alert("❌ " + (data.message || "Admission could not be saved"));
+        return;
+      }
 
       if (/success/i.test(raw)) {
         const whatsappMessage = createAdmissionWhatsAppMessage("");

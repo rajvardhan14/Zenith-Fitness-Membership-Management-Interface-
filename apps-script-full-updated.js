@@ -171,6 +171,7 @@ Let’s build your best version together`;
         });
         enqueuePostProcess_();
         enqueueEndOfDayRebuild_();
+        processPostProcessQueue();
 
       } catch (postErr) {
         Logger.log("Admission saved but post-processing failed: " + postErr.message);
@@ -307,6 +308,7 @@ Let’s build your best version together`;
         });
         enqueuePostProcess_();
         enqueueEndOfDayRebuild_();
+        processPostProcessQueue();
 
       } catch (postErr) {
         Logger.log("Renewal saved but post-processing failed: " + postErr.message);
@@ -417,6 +419,7 @@ Instagram:
         }
 
         enqueueEndOfDayRebuild_();
+        processPostProcessQueue();
 
       } catch (postErr) {
         Logger.log("Enquiry saved but post-processing failed: " + postErr.message);
@@ -566,19 +569,27 @@ function processPostProcessQueue() {
     const eodPending = props.getProperty("END_OF_DAY_REBUILD_PENDING");
 
     if (renewalPending === "1") {
-      updateRenewalsList_();
-      updatePendingAmountsList_();
-      applyRenewalColorCoding_();
+      try {
+        updateRenewalsList_();
+        updatePendingAmountsList_();
+        applyRenewalColorCoding_();
 
-      props.deleteProperty("POST_PROCESS_PENDING");
-      props.deleteProperty("POST_PROCESS_REQUESTED_AT");
+        props.deleteProperty("POST_PROCESS_PENDING");
+        props.deleteProperty("POST_PROCESS_REQUESTED_AT");
+      } catch (renewalErr) {
+        Logger.log("processPostProcessQueue renewal/pending error: " + (renewalErr.message || String(renewalErr)));
+      }
     }
 
     if (eodPending === "1") {
-      rebuildTodayEndOfDayReport_();
+      try {
+        rebuildTodayEndOfDayReport_();
 
-      props.deleteProperty("END_OF_DAY_REBUILD_PENDING");
-      props.deleteProperty("END_OF_DAY_REBUILD_REQUESTED_AT");
+        props.deleteProperty("END_OF_DAY_REBUILD_PENDING");
+        props.deleteProperty("END_OF_DAY_REBUILD_REQUESTED_AT");
+      } catch (eodErr) {
+        Logger.log("processPostProcessQueue end-of-day error: " + (eodErr.message || String(eodErr)));
+      }
     }
 
   } catch (err) {
@@ -1329,6 +1340,8 @@ function applyRenewalColorCoding_() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Renewals List");
   if (!sheet || sheet.getLastRow() < 2) return;
 
+  const TODAY_RENEWAL_COLOR = "#FCE8E6";
+  const UPCOMING_RENEWAL_COLOR = "#FFF4C2";
   const data = sheet.getDataRange().getValues();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -1361,9 +1374,9 @@ function applyRenewalColorCoding_() {
     rowRange.setFontColor(null).setFontWeight("normal");
 
     if (diffDays === 0) {
-      rowRange.setBackground("#FFC7CE");
+      rowRange.setBackground(TODAY_RENEWAL_COLOR);
     } else if (diffDays > 0 && diffDays <= 5) {
-      rowRange.setBackground("#FFEB9C");
+      rowRange.setBackground(UPCOMING_RENEWAL_COLOR);
     } else {
       rowRange.setBackground(null);
     }
@@ -1706,6 +1719,7 @@ function updatePendingPayment_(data, ss) {
     });
     enqueuePostProcess_();
     enqueueEndOfDayRebuild_();
+    processPostProcessQueue();
 
     return json_({
       success: true,
